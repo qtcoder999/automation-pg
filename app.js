@@ -1,12 +1,12 @@
-// eslint-disable-next-line no-undef
+/* eslint-disable no-undef */
 const xl = require("excel4node");
-
+const metaData = require("./list-of-places.json");
 const wb = new xl.Workbook();
 const ws = wb.addWorksheet("Sheet 1");
 
 let rowCounter = 1;
 
-let metaData = { address: ["Laxmi Nagar", "Hauz Khas", "Lajpat Nagar"] };
+// let metaData = { address: ["Laxmi Nagar", "Hauz Khas", "Lajpat Nagar"] };
 
 const headingStyle = wb.createStyle({
   font: {
