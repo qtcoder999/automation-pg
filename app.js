@@ -1,44 +1,36 @@
-/* eslint-disable no-undef */
-const xl = require("excel4node");
-const metaData = require("./list-of-places.json");
-const wb = new xl.Workbook();
-const ws = wb.addWorksheet("Sheet 1");
+// eslint-disable-next-line no-undef
+var axios = require("axios");
 
-let rowCounter = 1;
+let API_KEY = "AIzaSyDcYxpp7GlxSCAA6XLzEFuf-BsXeyjXm4A";
 
-// let metaData = { address: ["Laxmi Nagar", "Hauz Khas", "Lajpat Nagar"] };
+let input = "Restaurants in Sydney";
 
-const headingStyle = wb.createStyle({
-  font: {
-    color: "#333333",
-    size: 14
-  },
-  numberFormat: "$#,##0.00; ($#,##0.00); -"
-});
+let url =
+  "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" +
+  encodeURI(input) +
+  "&fields=name,formatted_address&key=" +
+  API_KEY;
 
-const contentStyle = wb.createStyle({
-  font: {
-    color: "#333333",
-    size: 12
-  },
-  numberFormat: "$#,##0.00; ($#,##0.00); -"
-});
+const makeRequestToGoogle = () => {
+  axios.get(url).then(async function(response) {
+    await printResults(response.data.results).then(
+      makeRequestToGoogleWithPageToken(response.data.pagetoken, 0)
+    );
+  });
+};
 
-async function writeToExcel(metaData) {
-  ws.cell(rowCounter, 1)
-    .string("PG address")
-    .style(headingStyle);
-  rowCounter += 1;
-  for (let i = 0; i < metaData.address.length; i++) {
-    ws.cell(rowCounter + i, 1)
-      .string(metaData.address[i])
-      .style(contentStyle);
+const makeRequestToGoogleWithPageToken = (pagetoken, i) => {
+  let newUrl = url + "&pagetoken=" + pagetoken;
+  axios.get(newUrl).then(function(response) {
+    printResults(response.data.results).then(() => {
+      if (i < 2) makeRequestToGoogleWithPageToken(response.pagetoken, ++i);
+    });
+  });
+};
+const printResults = async results => {
+  for (let i = 0; i < results.length; i++) {
+    // eslint-disable-next-line no-console
+    console.log(results[i].formatted_address);
   }
-
-  ws.column(1).setWidth(50);
-
-  rowCounter += metaData.address.length;
-  wb.write("data.xlsx");
-}
-
-writeToExcel(metaData);
+};
+makeRequestToGoogle();
